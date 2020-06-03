@@ -152,7 +152,7 @@ function dump() {
 }
 
 function draw() {
-	if(side === turn) {
+	if(can_play && side === turn) {
 		document.title = "your turn | " + my_name + " vs " + opponent + " | tic tac toe³";
 	} else {
 		document.title = my_name + " vs " + opponent + " | tic tac toe³";
@@ -296,7 +296,7 @@ canvas.addEventListener("click", event => {
 				if(!won(board[mini_selected][by * 3 + bx])) {
 					micro_selected = by * 3 + bx;
 				}
-			} else {
+			} else if(board[mini_selected][micro_selected][by * 3 + bx] === 0) {
 				board[mini_selected][micro_selected][by * 3 + bx] = side;
 				if(won(board[mini_selected][micro_selected])) {
 					mini_selected = micro_selected;
