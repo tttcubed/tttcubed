@@ -273,10 +273,10 @@ function next_turn() {
 }
 
 canvas.addEventListener("click", event => {
+	let rect = canvas.getBoundingClientRect();
+	let x = event.clientX - rect.left;
+	let y = event.clientY - rect.top;
 	if(can_play && turn === side) {
-		let rect = canvas.getBoundingClientRect();
-		let x = event.clientX - rect.left;
-		let y = event.clientY - rect.top;
 		if(x < 600) {
 			let bx = Math.floor(x / 200);
 			let by = Math.floor(y / 200);
