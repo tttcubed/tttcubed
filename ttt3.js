@@ -127,7 +127,7 @@ let opponent = "";
 let mini_allowed = -1;
 let micro_allowed = -1;
 
-const ws = new WebSocket('ws://ttt3-server.glitch.me');
+const ws = new WebSocket("wss://ttt3-server.glitch.me");
 
 ws.onopen = () => {
 	if(room === "") {
@@ -251,7 +251,6 @@ draw();
 
 function next_turn() {
 	turn = turn === RED? BLUE: RED;
-	//side = turn;
 	if(won(board)) {
 		mini_selected = -1;
 		micro_selected = -1;
