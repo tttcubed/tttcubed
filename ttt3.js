@@ -131,7 +131,7 @@ const ws = new WebSocket("wss://ttt3-server.glitch.me");
 
 ws.onopen = () => {
 	if(room === "") {
-		board = gen_board(() => gen_board(() => gen_board(() => Math.floor(Math.random() * 3))));
+		board = gen_board(() => gen_board(() => gen_board(() => 0)));
 		ws.send("crte" + my_name);
 	} else {
 		ws.send("join" + my_name + ";" + room);
