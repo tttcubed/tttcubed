@@ -5,7 +5,7 @@ ctx.font = "24px sans-serif";
 ctx.fillStyle = "#cccccc";
 ctx.strokeStyle = "#cccccc";
 
-let mini_selected = 0;
+let mini_selected = -1;
 let micro_selected = -1;
 
 function won(t) {
@@ -123,9 +123,10 @@ let turn = RED;
 let side = RED;
 let my_name = window.prompt("Username");
 let room = window.prompt("Room code (blank to create new)").toLowerCase();
-let opponent = "";
+let opponent = "<nobody joined>";
 let mini_allowed = -1;
 let micro_allowed = -1;
+let ask_rematch = false;
 
 const ws = new WebSocket("wss://ttt3-server.glitch.me");
 
@@ -152,9 +153,9 @@ function dump() {
 
 function draw() {
 	if(side === turn) {
-		document.title = "your turn | tic tac toe³";
+		document.title = "your turn | " + my_name + " vs " + opponent + " | tic tac toe³";
 	} else {
-		document.title = "tic tac toe³";
+		document.title = my_name + " vs " + opponent + " | tic tac toe³";
 	}
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	draw_board(board, 0, 0, 4, 600, 0);
@@ -165,9 +166,12 @@ function draw() {
 			draw_board(board[mini_selected], 608, 208, 2, 184, mini_selected);
 		}
 	}
-	let info1 = turn === RED? "red's turn": "blue's turn";
+	let w = won(board);
+	let info1 = w === RED? "red won": (w === BLUE? "blue won": (w === -1? "tie": (turn === RED? "red's turn": "blue's turn")));
 	let info3 = "room code " + room;
-	if(turn === RED) {
+	if(w === -1) {
+		ctx.fillStyle = "#bfbf14";
+	} else if(w === RED || turn === RED) {
 		ctx.fillStyle = "#bf1414";
 	} else {
 		ctx.fillStyle = "#1414bf";
@@ -194,6 +198,12 @@ function draw() {
 	ctx.fillStyle = "#cccccc";
 	m = ctx.measureText(info3);
 	ctx.fillText(info3, 800 - m.width, 600 - 24);
+	ctx.fillStyle = "#ffffff";
+	if(ask_rematch) {
+		m = ctx.measureText("rematch");
+		ctx.fillText("rematch", 700 - m.width, 600 - 120);
+		ctx.fillStyle = "#cccccc";
+	}
 }
 
 ws.onmessage = data => {
@@ -236,6 +246,7 @@ ws.onmessage = data => {
 			mini_selected = -1;
 			micro_selected = -1;
 			can_play = false;
+			ask_rematch = true;
 		}
 	} else if(msg.startsWith("crtd")) {
 		room = msg.substring(4);
@@ -244,7 +255,6 @@ ws.onmessage = data => {
 		can_play = false;
 	}
 	draw();
-	console.log(msg);
 };
 
 draw();
@@ -257,6 +267,7 @@ function next_turn() {
 		mini_allowed = -1;
 		micro_allowed = -1;
 		can_play = false;
+		ask_rematch = true;
 	}
 	dump();
 }
@@ -267,7 +278,6 @@ canvas.addEventListener("click", event => {
 		let x = event.clientX - rect.left;
 		let y = event.clientY - rect.top;
 		if(x < 600) {
-			console.log(x + "bruh" + y);
 			let bx = Math.floor(x / 200);
 			let by = Math.floor(y / 200);
 			let bbx = Math.floor(x % 200 / (200 / 3));
@@ -278,6 +288,7 @@ canvas.addEventListener("click", event => {
 				mini_selected = mini;
 				micro_selected = micro;
 			}
+			draw();
 		} else if(x >= 608 && x < 608 + 184 && y >= 208 && y < 208 + 184 && mini_selected !== -1) {
 			let bx = Math.floor((x - 608) / (184 / 3));
 			let by = Math.floor((y - 208) / (184 / 3));
@@ -319,7 +330,20 @@ canvas.addEventListener("click", event => {
 				}
 				next_turn();
 			}
+			draw();
 		}
-		draw();
+	} else if(ask_rematch) {
+		let m = ctx.measureText("rematch");
+		if(x >= 700 - m.width / 2 && x < 700 + m.width / 2 && y >= 600 - 120 - 24 && y < 600 - 120) {
+			board = gen_board(() => gen_board(() => gen_board(() => 0)));
+			mini_allowed = -1;
+			micro_allowed = -1;
+			mini_selected = -1;
+			micro_selected = -1;
+			dump();
+			can_play = true;
+			ask_rematch = false;
+			draw();
+		}
 	}
 }, false);
